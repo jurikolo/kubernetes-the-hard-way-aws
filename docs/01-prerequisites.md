@@ -13,8 +13,7 @@ This tutorial leverages the [Amazon Web Services](https://aws.amazon.com/) to st
 Follow the AWS CLI [documentation](https://aws.amazon.com/cli/) to install and configure the `aws` command line utility.
 
 Verify the AWS CLI version using:
-
-```
+```sh
 aws --version
 ```
 
@@ -23,13 +22,10 @@ aws --version
 This tutorial assumes a default compute region and zone have been configured.
 
 Go ahead and set a default compute region:
-
-```
-AWS_REGION=us-west-1
-
+```sh
+AWS_REGION=us-central-1
 aws configure set default.region $AWS_REGION
 ```
-
 
 ## Running Commands in Parallel with tmux
 

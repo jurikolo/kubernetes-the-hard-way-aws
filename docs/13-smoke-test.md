@@ -15,21 +15,21 @@ kubectl create secret generic kubernetes-the-hard-way --from-literal="mykey=myda
 Print a hexdump of the `kubernetes-the-hard-way` secret stored in etcd:
 
 ```sh
-external_ip=$(aws ec2 describe-instances --filters \
+external_ip=$(aws --profile k8s ec2 describe-instances --filters \
   "Name=tag:Name,Values=controller-0" \
   "Name=instance-state-name,Values=running" \
   --output text --query 'Reservations[].Instances[].PublicIpAddress')
 
-ssh -i kubernetes.id_rsa ubuntu@${external_ip}
+ssh -i ~/.ssh/k8s-hard-way.id_rsa ubuntu@${external_ip}
 ```
-Run below command in controller-0
 
+Run below command in controller-0
 ```sh
 sudo ETCDCTL_API=3 etcdctl get \
   --endpoints=https://127.0.0.1:2379 \
-  --cacert=/etc/etcd/ca.pem \
-  --cert=/etc/etcd/kubernetes.pem \
-  --key=/etc/etcd/kubernetes-key.pem\
+  --cacert=/etc/etcd/ca.crt \
+  --cert=/etc/etcd/kube-apiserver.crt \
+  --key=/etc/etcd/kube-apiserver.key\
   /registry/secrets/default/kubernetes-the-hard-way | hexdump -C
 ```
 
@@ -68,13 +68,13 @@ In this section you will verify the ability to create and manage [Deployments](h
 
 Create a deployment for the [nginx](https://nginx.org/en/) web server:
 
-```
+```sh
 kubectl create deployment nginx --image=nginx
 ```
 
 List the pod created by the `nginx` deployment:
 
-```
+```sh
 kubectl get pods -l app=nginx
 ```
 
@@ -91,13 +91,13 @@ In this section you will verify the ability to access applications remotely usin
 
 Retrieve the full name of the `nginx` pod:
 
-```
+```sh
 POD_NAME=$(kubectl get pods -l app=nginx -o jsonpath="{.items[0].metadata.name}")
 ```
 
 Forward port `8080` on your local machine to port `80` of the `nginx` pod:
 
-```
+```sh
 kubectl port-forward $POD_NAME 8080:80
 ```
 
@@ -110,7 +110,7 @@ Forwarding from [::1]:8080 -> 80
 
 In a new terminal make an HTTP request using the forwarding address:
 
-```
+```sh
 curl --head http://127.0.0.1:8080
 ```
 
@@ -159,14 +159,14 @@ In this section you will verify the ability to [execute commands in a container]
 
 Print the nginx version by executing the `nginx -v` command in the `nginx` container:
 
-```
+```sh
 kubectl exec -ti $POD_NAME -- nginx -v
 ```
 
 > output
 
 ```
-nginx version: nginx/1.19.2
+nginx version: nginx/1.21.3
 ```
 
 ## Services
@@ -175,7 +175,7 @@ In this section you will verify the ability to expose applications using a [Serv
 
 Expose the `nginx` deployment using a [NodePort](https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport) service:
 
-```
+```sh
 kubectl expose deployment nginx --port 80 --type NodePort
 ```
 
@@ -183,15 +183,15 @@ kubectl expose deployment nginx --port 80 --type NodePort
 
 Retrieve the node port assigned to the `nginx` service:
 
-```
+```sh
 NODE_PORT=$(kubectl get svc nginx \
   --output=jsonpath='{range .spec.ports[0]}{.nodePort}')
 ```
 
 Create a firewall rule that allows remote access to the `nginx` node port:
 
-```
-aws ec2 authorize-security-group-ingress \
+```sh
+aws --profile k8s ec2 authorize-security-group-ingress \
   --group-id ${SECURITY_GROUP_ID} \
   --protocol tcp \
   --port ${NODE_PORT} \
@@ -200,14 +200,14 @@ aws ec2 authorize-security-group-ingress \
 
 Get the worker node name where the `nginx` pod is running:
 
-```
+```sh
 INSTANCE_NAME=$(kubectl get pod $POD_NAME --output=jsonpath='{.spec.nodeName}')
 ```
 
 Retrieve the external IP address of a worker instance:
 
-```
-EXTERNAL_IP=$(aws ec2 describe-instances --filters \
+```sh
+EXTERNAL_IP=$(aws --profile k8s ec2 describe-instances --filters \
     "Name=instance-state-name,Values=running" \
     "Name=network-interface.private-dns-name,Values=${INSTANCE_NAME}.*.internal*" \
     --output text --query 'Reservations[].Instances[].PublicIpAddress')
@@ -215,7 +215,7 @@ EXTERNAL_IP=$(aws ec2 describe-instances --filters \
 
 Make an HTTP request using the external IP address and the `nginx` node port:
 
-```
+```sh
 curl -I http://${EXTERNAL_IP}:${NODE_PORT}
 ```
 
@@ -239,7 +239,7 @@ This section will verify the ability to run untrusted workloads using [gVisor](h
 
 Create the `untrusted` pod:
 
-```
+```sh
 cat <<EOF | kubectl apply -f -
 apiVersion: v1
 kind: Pod
@@ -260,7 +260,7 @@ In this section you will verify the `untrusted` pod is running under gVisor (run
 
 Verify the `untrusted` pod is running:
 
-```
+```sh
 kubectl get pods -o wide
 ```
 
@@ -274,14 +274,14 @@ untrusted                1/1       Running   0          8s        10.200.2.3   i
 
 Get the node name where the `untrusted` pod is running:
 
-```
+```sh
 INSTANCE_NAME=$(kubectl get pod untrusted --output=jsonpath='{.spec.nodeName}')
 ```
 
 Retrieve the external IP address of a worker instance:
 
-```
-INSTANCE_IP=$(aws ec2 describe-instances --filters \
+```sh
+INSTANCE_IP=$(aws --profile k8s ec2 describe-instances --filters \
     "Name=instance-state-name,Values=running" \
     "Name=network-interface.private-dns-name,Values=${INSTANCE_NAME}.*.internal*" \
     --output text --query 'Reservations[].Instances[].PublicIpAddress')
@@ -289,8 +289,8 @@ INSTANCE_IP=$(aws ec2 describe-instances --filters \
 
 SSH into the worker node:
 
-```
-ssh -i kubernetes.id_rsa ubuntu@${INSTANCE_IP}
+```sh
+ssh -i k8s-hard-way.id_rsa ubuntu@${INSTANCE_IP}
 ```
 
 List the containers running under gVisor:
@@ -366,7 +366,7 @@ external_ip=$(aws ec2 describe-instances --filters \
   "Name=instance-state-name,Values=running" \
   --output text --query 'Reservations[].Instances[].PublicIpAddress')
 
-ssh -i kubernetes.id_rsa ubuntu@${external_ip}
+ssh -i k8s-hard-way.id_rsa ubuntu@${external_ip}
 ```
 Run following commands and check output
 

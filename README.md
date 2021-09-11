@@ -1,16 +1,19 @@
 # About
 
-This is a fork of awesome [Kubernetes The Hard Way](https://github.com/kelseyhightower/kubernetes-the-hard-way) by Kelsey Hightower and is geared towards using it on AWS. Also thanks to [@slawekzachcial](https://github.com/slawekzachcial) for his [work](https://github.com/slawekzachcial/kubernetes-the-hard-way-aws) that made this easier. I have made some changes along the way:
+This is a fork of [fork](https://github.com/prabhatsharma/kubernetes-the-hard-way-aws) of awesome [Kubernetes The Hard Way](https://github.com/kelseyhightower/kubernetes-the-hard-way) by Kelsey Hightower and is geared towards using it on AWS.
+Also thanks to [@slawekzachcial](https://github.com/slawekzachcial) for his [work](https://github.com/slawekzachcial/kubernetes-the-hard-way-aws) that made this easier.
 
-1. Upgraded kubernetes to v1.18.6
-2. Upgraded cri-tools to v1.18.0
-3. Upgraded containerd to v1.3.6
-4. Upgraded CNI plugins to v0.8.6
-5. Upgraded etcd to 3.4.10
+My minor changes:
+* focus on Fedora Linux
+* use openssl instead of `cfssl`
+* use profile with `aws cli`
 
 # Kubernetes The Hard Way
 
-This tutorial walks you through setting up Kubernetes the hard way. This guide is not for people looking for a fully automated command to bring up a Kubernetes cluster. If that's you then check out [Google Kubernetes Engine](https://cloud.google.com/kubernetes-engine), [AWS Elastic Container Service for Kubernetes](https://aws.amazon.com/eks/) or the [Getting Started Guides](http://kubernetes.io/docs/getting-started-guides/).
+This tutorial walks you through setting up Kubernetes the hard way.
+This guide is not for people looking for a fully automated command to bring up a Kubernetes cluster.
+If that's you then check out [Google Kubernetes Engine](https://cloud.google.com/kubernetes-engine),
+[AWS Elastic Container Service for Kubernetes](https://aws.amazon.com/eks/) or the [Getting Started Guides](http://kubernetes.io/docs/getting-started-guides/).
 
 Kubernetes The Hard Way is optimized for learning, which means taking the long route to ensure you understand each task required to bootstrap a Kubernetes cluster.
 
@@ -32,7 +35,7 @@ Kubernetes The Hard Way guides you through bootstrapping a highly available Kube
 
 ## Labs
 
-This tutorial assumes you have access to the [Amazon Web Service](https://aws.amazon.com/). If you are looking for GCP version of this guide then look at : [https://github.com/kelseyhightower/kubernetes-the-hard-way](https://github.com/kelseyhightower/kubernetes-the-hard-way).
+This tutorial assumes you have access to the [Amazon Web Service](https://aws.amazon.com/).
 
 * [Prerequisites](docs/01-prerequisites.md)
 * [Installing the Client Tools](docs/02-client-tools.md)
